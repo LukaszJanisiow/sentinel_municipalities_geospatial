@@ -1,7 +1,7 @@
 import timm
 import torch
 from torch.utils.data import DataLoader
-from patch_dataset import PatchDataset
+from .patch_dataset import PatchDataset
 
 
 class Detector:
@@ -14,7 +14,7 @@ class Detector:
             num_classes (int): The number of classes for the classification task.
             model_path (str): Path to the pretrained model weights.
         """
-        self.model = timm.create_model(model_name, pretrained=True, num_classes=num_classes)
+        self.model = timm.create_model(model_name, pretrained=False, num_classes=num_classes)
         self.model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
         self.model.eval()  
 
