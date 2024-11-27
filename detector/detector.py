@@ -56,3 +56,41 @@ class Detector:
                     class_pixel_counts[pred_class.item()] += mask_pixels[i].item()
 
         return class_pixel_counts
+    
+    def vis(self, patches, batch_size=8, device='cuda'):
+        """
+        Predict the class of each patch and compute pixel counts per class.
+
+        Args:
+            patches (list): List of image patches, each with 4 channels (RGB + mask).
+            batch_size (int): Batch size for prediction.
+            device (str): Device to run the model on ('cuda' or 'cpu').
+
+        Returns:
+            class_pixel_counts (list): Total number of pixels (with mask applied) per class.
+        """
+        # Create a dataset and DataLoader for the patches
+        dataset = PatchDataset(patches)
+        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
+
+        # Move model to the desired device
+        self.model.to(device)
+
+        # Initialize pixel count accumulator
+        predictions = []
+
+        # Predict in batches
+        with torch.no_grad():
+            for images, mask_pixels in dataloader:
+                images = images.to(device)
+                mask_pixels = mask_pixels.to(device)
+
+                # Forward pass through the model
+                outputs = self.model(images)
+                _, preds = torch.max(outputs, 1)
+
+                # Accumulate pixel counts for each predicted class
+                for i, pred_class in enumerate(preds):
+                    predictions.append(pred_class.item())
+
+        return predictions
